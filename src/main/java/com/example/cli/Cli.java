@@ -30,7 +30,7 @@ public final class Cli implements Runnable {
             new MenuOption(2, "Manage customers"),
             new MenuOption(3, "Manage orders"),
             new MenuOption(4, "Export reports"),
-            new MenuOption(5, "Test program")
+            new MenuOption(5, "Exit program")
     );
 
     private static final List<MenuOption> PRODUCT_OPTIONS = List.of(
@@ -57,7 +57,6 @@ public final class Cli implements Runnable {
             new MenuOption(5, "Go back to previous menu")
     );
 
-
     private static final List<MenuOption> REPORT_OPTIONS = List.of(
             new MenuOption(1, "Daily revenue report"),
             new MenuOption(2, "Go back to previous menu")
@@ -75,6 +74,7 @@ public final class Cli implements Runnable {
             new MenuOption(2, "Go back to previous menu")
     );
 
+
     private final List<String> args;
 
     private Warehouse warehouse;
@@ -82,6 +82,7 @@ public final class Cli implements Runnable {
     public Cli(List<String> args) {
         this.args = args;
     }
+
 
     @Override
     public void run() {
@@ -96,6 +97,30 @@ public final class Cli implements Runnable {
 
         while (true) {
             displayMainMenu();
+            try {
+                int mainMenuChoice = chooseMainMenuOption();
+                if (mainMenuChoice == -1) {
+                    break;
+                }
+                while (true) {
+                    displaySubMenu(mainMenuChoice);
+                    try {
+                        int subMenuChoice = chooseSubMenuOption(mainMenuChoice);
+                        if (subMenuChoice == -1) {
+                            break;
+                        }
+                        doMenuAction(mainMenuChoice, subMenuChoice);
+                    } catch (NumberFormatException ex) {
+                        System.err.println("Invalid input. Enter a number.");
+                    } catch (IllegalArgumentException | UnsupportedOperationException ex) {
+                        System.err.println(ex.getMessage());
+                    }
+                }
+            } catch (NumberFormatException ex) {
+                System.err.println("Invalid input. Enter a number.");
+            } catch (IllegalArgumentException | UnsupportedOperationException ex) {
+                System.err.println(ex.getMessage());
+            }
         }
     }
 
