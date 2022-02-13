@@ -1,8 +1,10 @@
 package com.example.cli;
 
 import com.example.warehouse.*;
+import com.example.warehouse.export.*;
 
 import java.io.FileNotFoundException;
+import java.io.PrintStream;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -167,8 +169,58 @@ public final class Cli implements Runnable {
             doProductAction(subMenuChoice);
         } else if (mainMenuChoice == 2) {
             doCustomerAction(subMenuChoice);
+        } else if (mainMenuChoice == 3) {
+            doOrderAction(subMenuChoice);
+        } else if (mainMenuChoice == 4) {
+            doReportAction(subMenuChoice);
+        } else {
+            throw new IllegalStateException("There are only 3 main menu options, this cannot happen.");
         }
 
+    }
+
+    private void doReportAction(int subMenuChoice) {
+        Report report;
+        if (subMenuChoice == 1) {
+            report = warehouse.generateDailyRevenueReport(Report.Type.DAILY_REVENUE);
+        } else {
+            throw new IllegalStateException("There are only 2 report menu options, this cannot happen!");
+        }
+        doReportExport(report, System.out);
+    }
+
+    private void doReportExport(Report report, PrintStream out) {
+        displayMenu(EXPORT_OPTIONS);
+        final int exportMenuChoice = chooseMenuOption(EXPORT_OPTIONS);
+        if (exportMenuChoice == -1) {
+            return;
+        }
+        final ExportType type = ExportType.values()[exportMenuChoice - 1];
+        Exporter exporter;
+        if (type == ExportType.CSV) {
+            exporter = new CsvExporter(report, out, true);
+        } else if (type == ExportType.TXT) {
+            exporter = new TxtExporter(report, out);
+        } else if (type == ExportType.HTML) {
+            exporter = new HtmlExporter(report, out);
+        } else if (type == ExportType.JSON) {
+            exporter = new JsonExporter(report, out);
+        } else {
+            throw new IllegalStateException(String.format("Choosen exporter %s not handled, this cannot happen.", type));
+        }
+        exporter.export();
+    }
+
+    private void doOrderAction(int subMenuChoice) {
+        if (subMenuChoice == 1) {
+            doOrderList();
+        } else if (subMenuChoice == 2) {
+            throw new UnsupportedOperationException("Deleting orders not yet implemented.");
+        } else if (subMenuChoice == 3) {
+            throw new UnsupportedOperationException("Updating orders not yet implemented.");
+        } else {
+            throw new IllegalStateException("There are only 4 order menu options, this cannot happen.");
+        }
     }
 
     private void doCustomerAction(int subMenuChoice) {
@@ -212,19 +264,19 @@ public final class Cli implements Runnable {
         int maxTotalPriceWidth = 0;
         for (Order order : orders) {
             int idWidth = String.valueOf(order.getId()).length();
-            if(idWidth > maxIdWidth){
+            if (idWidth > maxIdWidth) {
                 maxIdWidth = idWidth;
             }
             int customerNameWidth = order.getCustomer().getName().length();
-            if(customerNameWidth > maxCustomerNameWidth){
+            if (customerNameWidth > maxCustomerNameWidth) {
                 maxCustomerNameWidth = customerNameWidth;
             }
             int customerIdWidth = String.valueOf(order.getCustomer().getId()).length();
-            if(customerIdWidth > maxCustomerIdWidth){
+            if (customerIdWidth > maxCustomerIdWidth) {
                 maxCustomerIdWidth = customerIdWidth;
             }
             int totalPriceIdWidth = String.valueOf(order.getTotalPrice()).length();
-            if(totalPriceIdWidth > maxTotalPriceWidth){
+            if (totalPriceIdWidth > maxTotalPriceWidth) {
                 maxTotalPriceWidth = totalPriceIdWidth;
             }
         }

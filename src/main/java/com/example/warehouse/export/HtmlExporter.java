@@ -10,8 +10,7 @@ import java.util.List;
  */
 public class HtmlExporter extends AbstractExporter {
 
-
-    HtmlExporter(Report report, PrintStream out) {
+    public HtmlExporter(Report report, PrintStream out) {
         super(report, out);
     }
 

@@ -22,7 +22,7 @@ public final class TxtExporter extends AbstractExporter {
 
     private final int totalWidth;
 
-    TxtExporter(Report report, PrintStream out) {
+    public TxtExporter(Report report, PrintStream out) {
         super(report, out);
         this.widths = calcWidths(report);
 

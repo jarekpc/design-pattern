@@ -9,7 +9,7 @@ import java.util.List;
 /**
  * @author jazy
  */
-public abstract class AbstractExporter {
+public abstract class AbstractExporter implements Exporter {
     private final Report report;
     private final PrintStream out;
 
