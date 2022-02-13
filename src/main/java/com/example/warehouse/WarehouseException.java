@@ -3,7 +3,7 @@ package com.example.warehouse;
 /**
  * @author jazy
  */
-public class WarehouseException extends Exception{
+public final class WarehouseException extends Exception{
 
     WarehouseException(String message) {
         super(message);
