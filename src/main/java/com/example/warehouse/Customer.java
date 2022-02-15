@@ -5,11 +5,20 @@ package com.example.warehouse;
  */
 public class Customer {
 
-    private final int id;
-    private final String name;
+    private int id;
+    private String name;
 
-    Customer(int id, String name) {
+
+    public Customer(int id, String name) {
         this.id = id;
+        this.name = name;
+    }
+
+    public Customer(Customer customer) {
+        this(customer.id, customer.name);
+    }
+
+    public Customer(String name) {
         this.name = name;
     }
 

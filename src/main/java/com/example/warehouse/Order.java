@@ -2,6 +2,7 @@ package com.example.warehouse;
 
 import java.time.LocalDate;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @author jazy
@@ -14,7 +15,11 @@ public class Order implements Comparable<Order>{
     private Map<Product, Integer> quantities;
     private boolean pending;
 
-    Order(int id, Customer customer, LocalDate date, Map<Product, Integer> quantities, boolean pending) {
+    public Order(Order order) {
+        this(order.id, order.customer, order.date, order.quantities, order.pending);
+    }
+
+    public Order(int id, Customer customer, LocalDate date, Map<Product, Integer> quantities, boolean pending) {
         this.id = id;
         this.customer = customer;
         this.date = date;
@@ -22,8 +27,29 @@ public class Order implements Comparable<Order>{
         this.pending = pending;
     }
 
+    public Order(Customer customer, Map<Product, Integer> quantities) {
+        this(customer, LocalDate.now(), quantities, true);
+    }
+
+    public Order(Customer customer, LocalDate date, Map<Product, Integer> quantities) {
+        this(customer, date, quantities, true);
+    }
+
+    public Order(Customer customer, LocalDate date, Map<Product, Integer> quantities, boolean pending) {
+        this.customer = new Customer(customer);
+        this.date = date;
+        this.quantities = quantities.entrySet()
+                .stream()
+                .collect(Collectors.toUnmodifiableMap(e -> new Product(e.getKey()), Map.Entry::getValue));
+        this.pending = pending;
+    }
+
     public int getId() {
         return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 
     public Customer getCustomer() {

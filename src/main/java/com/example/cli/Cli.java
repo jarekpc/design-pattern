@@ -3,7 +3,6 @@ package com.example.cli;
 import com.example.warehouse.*;
 import com.example.warehouse.export.*;
 
-import java.io.FileNotFoundException;
 import java.io.PrintStream;
 import java.util.Collection;
 import java.util.List;
@@ -88,15 +87,6 @@ public final class Cli implements Runnable {
 
     @Override
     public void run() {
-        try {
-            this.warehouse = new Warehouse();
-        } catch (FileNotFoundException ex) {
-            System.err.println("Please ensure the required CSV files are present: " + ex.getMessage());
-            System.exit(1);
-        } catch (WarehouseException ex) {
-            System.err.println("Failed to initialize the warehouse: " + ex.getMessage());
-        }
-
         while (true) {
             displayMainMenu();
             try {
@@ -116,6 +106,8 @@ public final class Cli implements Runnable {
                         System.err.println("Invalid input. Enter a number.");
                     } catch (IllegalArgumentException | UnsupportedOperationException ex) {
                         System.err.println(ex.getMessage());
+                    } catch (WarehouseException e) {
+                        e.printStackTrace();
                     }
                 }
             } catch (NumberFormatException ex) {
@@ -164,7 +156,7 @@ public final class Cli implements Runnable {
         return choice;
     }
 
-    private void doMenuAction(int mainMenuChoice, int subMenuChoice) {
+    private void doMenuAction(int mainMenuChoice, int subMenuChoice) throws WarehouseException {
         if (mainMenuChoice == 1) {
             doProductAction(subMenuChoice);
         } else if (mainMenuChoice == 2) {
@@ -223,7 +215,7 @@ public final class Cli implements Runnable {
         }
     }
 
-    private void doCustomerAction(int subMenuChoice) {
+    private void doCustomerAction(int subMenuChoice) throws WarehouseException {
         if (subMenuChoice == 1) {
             doCustomerList();
         } else if (subMenuChoice == 2) {
@@ -237,7 +229,7 @@ public final class Cli implements Runnable {
         }
     }
 
-    private void doCustomerList() {
+    private void doCustomerList() throws WarehouseException {
         final Collection<Customer> customers = warehouse.getCustomers();
         int maxIdWidth = 0;
         int maxNameWidth = 0;
@@ -287,7 +279,7 @@ public final class Cli implements Runnable {
                 o.getCustomer().getId(), o.getTotalPrice(), o.isPending() ? "pending" : "fulfilled"));
     }
 
-    private void doProductAction(int subMenuChoice) {
+    private void doProductAction(int subMenuChoice) throws WarehouseException {
         if (subMenuChoice == 1) {
             doProductList();
         } else if (subMenuChoice == 2) {
@@ -301,8 +293,8 @@ public final class Cli implements Runnable {
         }
     }
 
-    private void doProductList() {
-        Collection<Product> croducts = warehouse.getProducts();
+    private void doProductList() throws WarehouseException {
+        Collection<Product> croducts = Warehouse.getInstance().getProducts();
         int maxIdWidth = 0;
         int maxNameWidth = 0;
         int maxPriceWidth = 0;
