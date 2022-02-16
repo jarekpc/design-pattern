@@ -15,19 +15,21 @@ import java.util.Map;
  */
 public final class MemoryInventoryDao implements InventoryDao {
 
-    private static class InventoryDaoHolder {
-        private static final InventoryDao INSTANCE = new MemoryInventoryDao();
-    }
+//    private static class InventoryDaoHolder {
+//        private static final InventoryDao INSTANCE = new MemoryInventoryDao();
+//    }
 
     private static final String DEFAULT_INVENTORY_CSV_FILE = "inventory.csv";
 
-    public static InventoryDao getInstance() {
-        return InventoryDaoHolder.INSTANCE;
-    }
+//    public static InventoryDao getInstance() {
+//        return InventoryDaoHolder.INSTANCE;
+//    }
 
+    private final ProductDao productDao;
     private final Map<Integer, Integer> inventory;
 
-    private MemoryInventoryDao() {
+    public MemoryInventoryDao(ProductDao productDao) {
+        this.productDao = productDao;
         this.inventory = new HashMap<>();
         try {
             readInventory();
@@ -47,20 +49,22 @@ public final class MemoryInventoryDao implements InventoryDao {
             if (row.isEmpty()) {
                 continue;
             }
-            int id;
+            int id = 0;
             try {
                 id = Integer.valueOf(row.get(0));
             } catch (NumberFormatException ex) {
-                throw new WarehouseException("Failed to read inventory: invalid product ID in CSV, must be an integer.", ex);
+                ex.printStackTrace();
+//                throw new WarehouseException("Failed to read inventory: invalid product ID in CSV, must be an integer.", ex);
             }
-            if (MemoryProductDao.getInstance().getProduct(id) == null) {
-                throw new WarehouseException("Failed to read inventory: unknown product ID: " + id);
-            }
-            int quantity;
+//            if (MemoryProductDao.getInstance().getProduct(id) == null) {
+//                throw new WarehouseException("Failed to read inventory: unknown product ID: " + id);
+//            }
+            int quantity = 0;
             try {
                 quantity = Integer.valueOf(row.get(1));
             } catch (NumberFormatException ex) {
-                throw new WarehouseException("Failed to read inventory: invalid quantity in CSV, must be an integer.", ex);
+                ex.printStackTrace();
+//                throw new WarehouseException("Failed to read inventory: invalid quantity in CSV, must be an integer.", ex);
             }
             inventory.put(id, quantity);
         }

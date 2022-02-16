@@ -23,7 +23,7 @@ public class DbCustomerDao implements CustomerDao {
 
     private static final String DEFAULT_JDBC_URL = "jdbc:h2:mem:warehouse;INIT=RUNSCRIPT FROM 'classpath:scripts/init.sql'";
 
-    private DbCustomerDao() {
+    public DbCustomerDao() {
 
     }
 

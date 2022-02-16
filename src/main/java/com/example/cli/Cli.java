@@ -2,6 +2,7 @@ package com.example.cli;
 
 import com.example.warehouse.*;
 import com.example.warehouse.export.*;
+import com.example.warehouse.export.util.CopyByteArrayOutputStream;
 
 import java.io.PrintStream;
 import java.util.Collection;
@@ -78,10 +79,13 @@ public final class Cli implements Runnable {
 
     private final List<String> args;
 
-    private Warehouse warehouse;
+    private final Warehouse warehouse;
+    private final ReportDelivery reportDelivery;
 
-    public Cli(List<String> args) {
+    public Cli(List<String> args, Warehouse warehouse, ReportDelivery reportDelivery) {
         this.args = args;
+        this.warehouse = warehouse;
+        this.reportDelivery = reportDelivery;
     }
 
 
@@ -171,23 +175,42 @@ public final class Cli implements Runnable {
 
     }
 
-    private void doReportAction(int subMenuChoice) {
-        Report report;
+    private void doReportAction(int subMenuChoice) throws WarehouseException {
+        Report.Type reportType;
         if (subMenuChoice == 1) {
-            report = warehouse.generateDailyRevenueReport(Report.Type.DAILY_REVENUE);
+            reportType = Report.Type.DAILY_REVENUE;
         } else {
             throw new IllegalStateException("There are only 2 report menu options, this cannot happen!");
         }
-        doReportExport(report, System.out);
-    }
+        Report report = warehouse.generateReport(reportType);
 
-    private void doReportExport(Report report, PrintStream out) {
+        ExportType exportType;
         displayMenu(EXPORT_OPTIONS);
-        final int exportMenuChoice = chooseMenuOption(EXPORT_OPTIONS);
+        int exportMenuChoice = chooseMenuOption(EXPORT_OPTIONS);
         if (exportMenuChoice == -1) {
             return;
         }
-        final ExportType type = ExportType.values()[exportMenuChoice - 1];
+        exportType = ExportType.values()[exportMenuChoice - 1];
+
+//        doReportExport(report, System.out);
+        CopyByteArrayOutputStream cos = new CopyByteArrayOutputStream(System.out);
+        doReportExport(report, exportType, new PrintStream(cos));
+
+        try {
+            reportDelivery.deliver(reportType, exportType, cos.toByteArray());
+        }catch (ReportDeliveryException ex){
+            System.err.println(ex.getMessage());
+        }
+
+    }
+
+    private void doReportExport(Report report, ExportType type, PrintStream out) {
+//        displayMenu(EXPORT_OPTIONS);
+//        final int exportMenuChoice = chooseMenuOption(EXPORT_OPTIONS);
+//        if (exportMenuChoice == -1) {
+//            return;
+//        }
+//        final ExportType type = ExportType.values()[exportMenuChoice - 1];
         Exporter exporter;
         if (type == ExportType.CSV) {
             exporter = new CsvExporter(report, out, true);
@@ -294,7 +317,7 @@ public final class Cli implements Runnable {
     }
 
     private void doProductList() throws WarehouseException {
-        Collection<Product> croducts = Warehouse.getInstance().getProducts();
+        Collection<Product> croducts = warehouse.getProducts();
         int maxIdWidth = 0;
         int maxNameWidth = 0;
         int maxPriceWidth = 0;

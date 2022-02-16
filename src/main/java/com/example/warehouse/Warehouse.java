@@ -1,43 +1,34 @@
 package com.example.warehouse;
 
-import com.example.warehouse.dal.*;
-import com.example.warehouse.util.CsvReader;
+import com.example.warehouse.dal.CustomerDao;
+import com.example.warehouse.dal.InventoryDao;
+import com.example.warehouse.dal.OrderDao;
+import com.example.warehouse.dal.ProductDao;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.time.LocalDate;
-import java.time.format.DateTimeParseException;
-import java.util.*;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.stream.Collectors;
-
-import static java.util.stream.Collectors.groupingBy;
-import static java.util.stream.Collectors.summingInt;
 
 /**
  * @author jazy
  */
 public class Warehouse {
 
-    public static class WarehouseHolder {
-        private static final Warehouse INSTANCE = new Warehouse();
-    }
+    private final ProductDao productDao;
+    private final CustomerDao customerDao;
+    private final OrderDao orderDao;
+    private final InventoryDao inventoryDao;
 
-    public static Warehouse getInstance() {
-        return WarehouseHolder.INSTANCE;
-    }
+    private final ReportGeneration reportGeneration;
 
-    private static final String DEFAULT_PRODUCTS_CSV_FILE = "products.csv";
-    private static final String DEFAULT_INVENTORY_CSV_FILE = "inventory.csv";
-    private static final String DEFAULT_CUSTOMERS_CSV_FILE = "customers.csv";
-    private static final String DEFAULT_ORDERS_CSV_FILE = "orders.csv";
-
-    private final ProductDao productDao = MemoryProductDao.getInstance();
-    private final CustomerDao customerDao = DbCustomerDao.getInstance();
-    private final OrderDao orderDao = MemoryOrderDao.getInstance();
-    private final InventoryDao inventoryDao = MemoryInventoryDao.getInstance();
-
-
-    private Warehouse() {
+    public Warehouse(ProductDao productDao, CustomerDao customerDao, InventoryDao inventoryDao, OrderDao orderDao, ReportGeneration reportGeneration) {
+        this.productDao = productDao;
+        this.customerDao = customerDao;
+        this.inventoryDao = inventoryDao;
+        this.orderDao = orderDao;
+        this.reportGeneration = reportGeneration;
     }
 
     public Collection<Product> getProducts() throws WarehouseException {
@@ -52,7 +43,7 @@ public class Warehouse {
         return orderDao.getOrders().stream().sorted().sorted(Comparator.comparing(Order::getId)).collect(Collectors.toList());
     }
 
-    public synchronized void addProduct(String name, int price) throws WarehouseException {
+    public void addProduct(String name, int price) throws WarehouseException {
         if (price < 0) {
             throw new IllegalArgumentException("The product's price cannot be negative.");
         }
@@ -60,7 +51,7 @@ public class Warehouse {
         productDao.addProduct(product);
     }
 
-    public synchronized void addOrder(int customerId, Map<Integer, Integer> quantities) throws WarehouseException {
+    public void addOrder(int customerId, Map<Integer, Integer> quantities) throws WarehouseException {
         if (quantities.isEmpty()) {
             throw new IllegalArgumentException("There has to items in the order, it cannot be empty.");
         }
@@ -86,24 +77,23 @@ public class Warehouse {
         orderDao.addOrder(order);
     }
 
-    public Report generateDailyRevenueReport(Report.Type type) {
-        if (type == Report.Type.DAILY_REVENUE) {
-            return generateDailyRevenueReport();
-        }
-        throw new UnsupportedOperationException(String.format("Report type: %s not yet implemented.", type));
-    }
+//    public Report generateDailyRevenueReport(Report.Type type) {
+//        if (type == Report.Type.DAILY_REVENUE) {
+//            return generateDailyRevenueReport();
+//        }
+//        throw new UnsupportedOperationException(String.format("Report type: %s not yet implemented.", type));
+//    }
 
-    private Report generateDailyRevenueReport() {
-        Report report = new Report();
-        report.addLabel("Date");
-        report.addLabel("Total revenue");
-        orderDao.getOrders().stream()
-                .filter(o -> !o.isPending())
-                .sorted()
-                .collect(groupingBy(Order::getDate, LinkedHashMap::new, summingInt(Order::getTotalPrice)))
-                .forEach((date, totalRevenue) -> report.addRecord(Arrays.asList(date, totalRevenue)));
-        return report;
-    }
+//    private Report generateDailyRevenueReport() {
+//        Report report = new Report();
+//        report.addLabel("Date");
+//        report.addLabel("Total revenue");
+//        orderDao.getOrders().stream().filter(o -> !o.isPending()).sorted().collect(groupingBy(Order::getDate, LinkedHashMap::new, summingInt(Order::getTotalPrice))).forEach((date, totalRevenue) -> report.addRecord(Arrays.asList(date, totalRevenue)));
+//        return report;
+//    }
 
+    public Report generateReport(Report.Type type) throws WarehouseException {
+        return reportGeneration.generateReport(type);
+    }
 
 }

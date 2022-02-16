@@ -22,15 +22,12 @@ public class MemoryOrderDao implements OrderDao {
 
     private List<Order> orders;
 
-    private static class OrderDaoHolder {
-        private static final OrderDao INSTANCE = new MemoryOrderDao();
-    }
+    private final ProductDao productDao;
+    private final CustomerDao customerDao;
 
-    public static OrderDao getInstance() {
-        return OrderDaoHolder.INSTANCE;
-    }
-
-    private MemoryOrderDao() {
+    public MemoryOrderDao(ProductDao productDao, CustomerDao customerDao) {
+        this.productDao = productDao;
+        this.customerDao = customerDao;
         this.orders = new ArrayList<>();
         try {
             readOrders();
@@ -82,15 +79,16 @@ public class MemoryOrderDao implements OrderDao {
                 } catch (NumberFormatException ex) {
                     throw new WarehouseException("Failed to read orders: invalid product ID in CSV, must be an integer.", ex);
                 }
-                Product product = MemoryProductDao.getInstance().getProduct(productId);
+                Product product = productDao.getProduct(productId);
                 if (product == null) {
-                    throw new WarehouseException("Failed to read orders: unknown product ID in CSV.");
+//                    throw new WarehouseException("Failed to read orders: unknown product ID in CSV.");
+
                 }
-                int quantity;
+                int quantity = 0;
                 try {
                     quantity = Integer.valueOf(productIdAndQuantity[1]);
                 } catch (NumberFormatException ex) {
-                    throw new WarehouseException("Failed to read orders: invalid quantity in CSV, must be an integer.", ex);
+//                    throw new WarehouseException("Failed to read orders: invalid quantity in CSV, must be an integer.", ex);
                 }
                 quantities.put(product, quantity);
             }
