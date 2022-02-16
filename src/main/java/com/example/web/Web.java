@@ -38,12 +38,15 @@ public class Web implements Runnable {
 
     private final List<String> args;
     private final Warehouse warehouse;
-    private final ReportDelivery reportDelivery;
+    private final List<ReportDelivery> reportDeliveries;
+    private ReportDelivery activeReportDelivery;
 
-    public Web(List<String> args, Warehouse warehouse, ReportDelivery reportDelivery) {
+    public Web(List<String> args, Warehouse warehouse, List<ReportDelivery> reportDeliveries) {
         this.args = args;
         this.warehouse = warehouse;
-        this.reportDelivery = reportDelivery;
+        this.reportDeliveries = reportDeliveries;
+
+        activeReportDelivery = reportDeliveries.get(0);
     }
 
     public void run() {

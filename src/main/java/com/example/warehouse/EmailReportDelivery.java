@@ -52,4 +52,9 @@ public class EmailReportDelivery implements ReportDelivery {
             throw new ReportDeliveryException("Problem while delivering report export.", ex);
         }
     }
+
+    @Override
+    public String getName() {
+        return "Email-based report delivery";
+    }
 }
